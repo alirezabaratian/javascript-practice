@@ -20,3 +20,11 @@ console.log(b); // ReferenceError — stayed inside the block
 ```
 
 **Rule of thumb:** use const by default, let when you need to reassign, never var.
+
+**Note:** const doesn't mean immutable — it means the binding can't be reassigned:
+
+```javascript
+const arr = [1, 2, 3];
+arr.push(4);      // fine — mutating contents
+arr = [5, 6];      // TypeError — reassigning the variable itself
+```
