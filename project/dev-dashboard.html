@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dev Dashboard</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #12181f;
+    --border: #1f2a35;
+    --text: #c9d1d9;
+    --text-dim: #6e7c8c;
+    --accent: #39d98a;   /* terminal green */
+    --accent-dim: #1f8a55;
+    --warn: #e0a13c;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "SF Mono", "Consolas", "Menlo", monospace;
+    padding: 32px;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 16px;
+  }
+
+  header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin: 0;
+  }
+
+  header h1::before {
+    content: "$ ";
+    color: var(--accent);
+  }
+
+  #clock {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .widget {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+  }
+
+  .widget-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin: 0 0 12px 0;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .widget-title .tag {
+    color: var(--accent);
+  }
+
+  .widget-body {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+
+  .stat-value {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .placeholder {
+    color: var(--text-dim);
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  footer {
+    margin-top: 32px;
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <h1>dev-dashboard</h1>
+    <div id="clock"></div>
+  </header>
+
+  <div id="grid"></div>
+
+  <footer>Week 1 build — static layout, no live data yet.</footer>
+
+<script>
+  /*
+    WEEK 1 GOALS covered in this file:
+    - const/let (no var)
+    - array of objects as our data model
+    - template literals for building HTML
+    - map() to turn data into DOM elements
+    - destructuring when reading widget fields
+    - a tiny bit of DOM manipulation
+
+    Nothing here talks to a network yet — that's Week 2.
+    Every widget currently renders fake/placeholder data via a
+    `render()` function on itself. In Week 2 you'll swap these
+    render() functions for ones that fetch real data.
+  */
+
+  // --- 1. Data model: each widget is just an object in an array ---
+  // This is the pattern you'll build on all month: add a widget by
+  // pushing a new object here, nothing else has to change.
+  const widgets = [
+    {
+      id: "github",
+      title: "GitHub Activity",
+      tag: "api",
+      render: () => `<p class="placeholder">// commits, stars, recent repos will load here</p>`
+    },
+    {
+      id: "weather",
+      title: "Weather",
+      tag: "api",
+      render: () => `<p class="placeholder">// current conditions will load here</p>`
+    },
+    {
+      id: "server",
+      title: "Server Status",
+      tag: "api",
+      render: () => `<p class="placeholder">// uptime / ping results will load here</p>`
+    },
+    {
+      id: "notes",
+      title: "Scratch Notes",
+      tag: "local",
+      // this one already has "real" data — an array of strings
+      render: () => {
+        const notes = [
+          "review nmap output from scan",
+          "write up CTF notes",
+          "start JS week 2"
+        ];
+        // map() + join() is a common pattern: turn an array of data
+        // into an array of HTML strings, then glue them together
+        const items = notes
+          .map((note) => `<div class="stat-row"><span>${note}</span></div>`)
+          .join("");
+        return `<div>${items}</div>`;
+      }
+    }
+  ];
+
+  // --- 2. Render function: takes the data model, produces DOM ---
+  // Destructuring: pulling id/title/tag/render straight off each widget
+  function renderWidgets(widgetList) {
+    const grid = document.getElementById("grid");
+
+    const html = widgetList
+      .map(({ id, title, tag, render }) => `
+        <div class="widget" id="widget-${id}">
+          <div class="widget-title">
+            <span>${title}</span>
+            <span class="tag">${tag}</span>
+          </div>
+          <div class="widget-body">
+            ${render()}
+          </div>
+        </div>
+      `)
+      .join("");
+
+    grid.innerHTML = html;
+  }
+
+  renderWidgets(widgets);
+
+  // --- 3. A tiny bit of "liveness" so it doesn't feel totally static ---
+  // Not async yet — just setInterval + Date, a preview of the
+  // update-on-a-timer pattern you'll reuse for real API polling in Week 2.
+  function updateClock() {
+    const now = new Date();
+    document.getElementById("clock").textContent = now.toLocaleTimeString();
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /*
+    TRY THIS to practice Week 1 concepts before moving on:
+    1. Add a 5th widget object to the `widgets` array (e.g. "Todo List")
+       and confirm it just shows up — that's the payoff of data-driven rendering.
+    2. In the notes widget, use .filter() to only show notes that
+       don't include the word "done".
+    3. Add a `createdAt: new Date()` field to each widget and display
+       "added Xs ago" using simple date math — good destructuring practice.
+  */
+</script>
+
+</body>
+</html>
