@@ -183,7 +183,17 @@
       id: "todo",
       title: "Todo List",
       tag: "local",
-      render: () => `<p class="placeholder">// todo items will load here</p>`
+      render: () => {
+        const todos = [ 
+          "Finish project report: done", 
+          "Email client", 
+          "Update resume" 
+        ];
+        const items = todos.filter(todo => !todo.toLowerCase().includes("done"))
+          .map((todo) => `<div class="stat-row"><span>${todo}</span></div>`)
+          .join("");
+        return `<div>${items || '<p class="placeholder">// no pending todos</p>'}</div>`;
+      }
     }
   ];
 
